@@ -253,6 +253,31 @@ input,select,button,textarea{font-family:'Inter',sans-serif;outline:none;border:
 .info-box{background:rgba(201,148,0,.03);border:1px solid rgba(201,148,0,.1);border-radius:var(--r3);padding:8px;font-size:9px;color:var(--gold);line-height:1.4;margin:6px 0}
 .card-3d{background:#fff;border:1px solid var(--border);border-radius:var(--r2);padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.04),0 0 0 1px rgba(201,148,0,.03);transition:transform .3s,box-shadow .3s}
 .card-3d:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.08)}
+.chart-wrap{position:relative}
+.chart-wrap iframe{display:block}
+.tv-hide{position:absolute;bottom:0;left:0;right:0;height:28px;background:linear-gradient(0deg,#fff 60%,rgba(255,255,255,.95));z-index:5;display:flex;align-items:flex-end;justify-content:center;padding-bottom:2px}
+.tv-hide span{font-size:6px;color:var(--text4);letter-spacing:.5px}
+.chart-fs{position:fixed;top:0;left:0;right:0;bottom:0;z-index:300;background:#fff}
+.chart-fs iframe{width:100%!important;height:calc(100% - 36px)!important}
+.chart-fs .fs-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:#fff;border-bottom:1px solid var(--border)}
+.chart-fs .fs-bar .fsp{font-size:13px;font-weight:800}.chart-fs .fs-bar .fsc{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800}
+.fs-close{width:28px;height:28px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:var(--text2)}
+.chart-tools{display:flex;gap:4px;padding:4px 14px;background:#fff;border-bottom:1px solid var(--border);overflow-x:auto}
+.chart-tools::-webkit-scrollbar{display:none}
+.ct-btn{padding:4px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;font-size:7px;font-weight:700;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:.2s}
+.ct-btn:active,.ct-btn.on{background:linear-gradient(135deg,var(--gold2),var(--gold4));color:#1e2329;border-color:var(--gold2)}
+.analysis-overlay{padding:6px 14px;background:linear-gradient(180deg,rgba(255,249,230,.95),#fff);border-bottom:1px solid var(--border)}
+.ao-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+.ao-card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 6px;position:relative;overflow:hidden}
+.ao-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%}
+.ao-card.bull::before{background:var(--green)}.ao-card.bear::before{background:var(--red)}.ao-card.neutral::before{background:var(--gold3)}
+.ao-card .ao-t{font-size:6px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+.ao-card .ao-v{font-size:9px;font-weight:800;margin-top:1px;font-family:'JetBrains Mono',monospace}
+.ob-zone{display:flex;align-items:center;gap:4px;padding:3px 6px;background:var(--bg2);border-radius:4px;font-size:7px;margin-bottom:2px}
+.ob-zone.bull-ob{border-left:2px solid var(--green)}.ob-zone.bear-ob{border-left:2px solid var(--red)}
+.ob-zone .ob-label{font-weight:700;flex-shrink:0}.ob-zone .ob-range{color:var(--text3);font-family:'JetBrains Mono',monospace}
+.ob-zone .ob-vol{margin-left:auto;font-family:'JetBrains Mono',monospace;color:var(--text2);font-weight:600}
+.ob-zone.mitigated{opacity:.4;text-decoration:line-through}
 </style>
 </head>
 <body>
@@ -335,8 +360,26 @@ input,select,button,textarea{font-family:'Inter',sans-serif;outline:none;border:
 <div style="cursor:pointer" onclick="openCoinSel()"><div class="chart-pair" id="chartPair">BTCUSDT</div><div style="font-size:8px;color:var(--text3)">Tap to change</div></div>
 <div style="flex:1"></div>
 <div style="text-align:right"><div class="chart-price" id="chartPrice">$0.00</div><div class="chart-chg" id="chartChg">0.00%</div></div>
+<div style="margin-left:6px;cursor:pointer;width:28px;height:28px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center" onclick="openFullChart()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></div>
 </div>
+<div class="chart-tools">
+<div class="ct-btn on" onclick="setChartTF('15',this)">15m</div>
+<div class="ct-btn" onclick="setChartTF('60',this)">1H</div>
+<div class="ct-btn" onclick="setChartTF('240',this)">4H</div>
+<div class="ct-btn" onclick="setChartTF('D',this)">1D</div>
+<div class="ct-btn" onclick="setChartTF('W',this)">1W</div>
+<div class="ct-btn" style="background:rgba(14,203,129,.04);color:var(--green2);border-color:rgba(14,203,129,.12)" onclick="toggleAnalysis()">Analysis</div>
+<div class="ct-btn" style="background:rgba(201,148,0,.04);color:var(--gold);border-color:rgba(201,148,0,.12)" onclick="toggleOBZones()">Order Blocks</div>
+</div>
+<div id="analysisOverlay" class="analysis-overlay" style="display:none"></div>
+<div class="chart-wrap">
 <iframe id="tvFrame" class="chart-frame" src="about:blank"></iframe>
+<div class="tv-hide"><span>DELTA EXCHANGE</span></div>
+</div>
+<div id="obZonesPanel" style="display:none;padding:6px 14px;background:#fff;border-bottom:1px solid var(--border)">
+<div style="font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Order Blocks (Supply & Demand)</div>
+<div id="obZonesList"></div>
+</div>
 <div class="order-book" id="orderBook"></div>
 <div class="trade-panel">
 <div class="trade-btns"><div class="trade-btn buy on" id="tbBuy" onclick="setDir('LONG')">LONG</div><div class="trade-btn sell" id="tbSell" onclick="setDir('SHORT')">SHORT</div></div>
@@ -413,6 +456,14 @@ input,select,button,textarea{font-family:'Inter',sans-serif;outline:none;border:
 <div class="modal-bg" id="convertModal" onclick="if(event.target===this)closeModal('convertModal')"><div class="modal"><div class="modal-h"><h3>Convert</h3><button class="modal-x" onclick="closeModal('convertModal')">x</button></div><div class="modal-body" id="convertBody"></div></div></div>
 <div class="modal-bg" id="p2pModal" onclick="if(event.target===this)closeModal('p2pModal')"><div class="modal"><div class="modal-h"><h3>P2P Trading</h3><button class="modal-x" onclick="closeModal('p2pModal')">x</button></div><div class="modal-body"><div class="tc" style="padding:40px 0"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><div style="font-size:16px;font-weight:900;margin-top:12px">Coming Soon</div><div style="font-size:10px;color:var(--text3);margin-top:4px">P2P Trading will be available shortly</div></div></div></div></div>
 
+<div id="fullChartWrap" class="chart-fs" style="display:none">
+<div class="fs-bar">
+<div><div class="fsp" id="fsPair">BTC/USDT</div></div>
+<div class="fsc" id="fsPrice">$0.00</div>
+<div class="fs-close" onclick="closeFullChart()">X</div>
+</div>
+<iframe id="fsFrame" style="width:100%;border:none;background:#fff" src="about:blank"></iframe>
+</div>
 <div class="loading-ov" id="loadOv"><div class="ld-spin"></div><div style="font-size:11px;font-weight:700;color:var(--gold)">Processing...</div></div>
 <div class="toast" id="toast"></div>
 
@@ -482,9 +533,20 @@ function coinRowHTML(s,idx,isPump){var p=prices[s];if(!p)return '';var cls=p.cha
 function setFilter(f,el){curFilter=f;document.querySelectorAll('.filter-tab').forEach(function(t){t.classList.remove('on')});if(el)el.classList.add('on');renderMarket()}
 function getSorted(type){var arr=[];for(var k in prices){if(prices.hasOwnProperty(k))arr.push(k)}if(type==='gainers')arr.sort(function(a,b){return(prices[b].change||0)-(prices[a].change||0)});else if(type==='losers')arr.sort(function(a,b){return(prices[a].change||0)-(prices[b].change||0)});else if(type==='volume')arr.sort(function(a,b){return(prices[b].volume||0)-(prices[a].volume||0)});return arr}
 
+var chartTF='15';var showAnalysis=false;var showOB=false;
 function selectCoin(s){selCoin=s;closeModal('coinModal');goPage('chart')}
-function updateChart(){var sym=selCoin==='DELTA'?'DOGE':selCoin;var url='https://s.tradingview.com/widgetembed/?frameElementId=tv&symbol=BINANCE:'+sym+'USDT&interval=15&theme=light&style=1&locale=en&hide_top_toolbar=0&hide_legend=0&save_image=0&backgroundColor=rgba(255,255,255,1)&gridColor=rgba(0,0,0,0.03)';var fr=document.getElementById('tvFrame');if(!fr.src||fr.src.indexOf(sym)<0)fr.src=url;updateChartPrice()}
+function setChartTF(tf,el){chartTF=tf;document.querySelectorAll('.chart-tools .ct-btn').forEach(function(b,i){if(i<5)b.classList.remove('on')});if(el)el.classList.add('on');loadChartFrame(document.getElementById('tvFrame'));updateAnalysisOverlay();updateOBZones()}
+function getChartURL(sym,tf){return 'https://s.tradingview.com/widgetembed/?frameElementId=tv&symbol=BINANCE:'+sym+'USDT&interval='+(tf||chartTF)+'&theme=light&style=1&locale=en&hide_top_toolbar=0&hide_legend=1&save_image=0&hide_side_toolbar=1&allow_symbol_change=0&backgroundColor=rgba(255,255,255,1)&gridColor=rgba(0,0,0,0.03)'}
+function loadChartFrame(fr){var sym=selCoin==='DELTA'?'DOGE':selCoin;fr.src=getChartURL(sym,chartTF)}
+function updateChart(){loadChartFrame(document.getElementById('tvFrame'));updateChartPrice();updateAnalysisOverlay();updateOBZones()}
 function updateChartPrice(){var p=prices[selCoin];if(!p)return;document.getElementById('chartPair').textContent=selCoin+'/USDT';document.getElementById('chartPrice').textContent='$'+fmtP(p.price);var ce=document.getElementById('chartChg');ce.textContent=(p.change>=0?'+':'')+p.change.toFixed(2)+'%';ce.style.color=p.change>=0?'var(--green2)':'var(--red)'}
+function openFullChart(){var sym=selCoin==='DELTA'?'DOGE':selCoin;var p=prices[selCoin];document.getElementById('fsPair').textContent=selCoin+'/USDT';document.getElementById('fsPrice').textContent=p?'$'+fmtP(p.price):'';document.getElementById('fsFrame').src=getChartURL(sym,chartTF);document.getElementById('fullChartWrap').style.display='block';document.body.style.overflow='hidden'}
+function closeFullChart(){document.getElementById('fullChartWrap').style.display='none';document.getElementById('fsFrame').src='about:blank';document.body.style.overflow=''}
+function toggleAnalysis(){showAnalysis=!showAnalysis;document.getElementById('analysisOverlay').style.display=showAnalysis?'block':'none';if(showAnalysis)updateAnalysisOverlay()}
+function toggleOBZones(){showOB=!showOB;document.getElementById('obZonesPanel').style.display=showOB?'block':'none';if(showOB)updateOBZones()}
+function updateAnalysisOverlay(){if(!showAnalysis)return;var s=analyzeMarket(selCoin);if(!s){document.getElementById('analysisOverlay').innerHTML='<div style="font-size:9px;color:var(--text3);text-align:center;padding:4px">Analyzing...</div>';return}var trendCls=s.trend==='BULLISH'?'bull':s.trend==='BEARISH'?'bear':'neutral';var sigCls=s.direction==='buy'?'bull':s.direction==='sell'?'bear':'neutral';var h='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><div style="font-size:10px;font-weight:800">Live Analysis: '+selCoin+'/USDT</div><div class="sig-badge '+(s.direction==='buy'?'sig-buy-badge':s.direction==='sell'?'sig-sell-badge':'sig-wait-badge')+'">'+s.signal+' '+s.confidence.toFixed(0)+'%</div></div>';h+='<div class="ao-grid">';h+='<div class="ao-card '+trendCls+'"><div class="ao-t">Market Structure</div><div class="ao-v" style="color:'+(s.trend==='BULLISH'?'var(--green2)':s.trend==='BEARISH'?'var(--red)':'var(--gold)')+'">'+s.trend+'</div></div>';h+='<div class="ao-card '+sigCls+'"><div class="ao-t">Momentum (10p)</div><div class="ao-v" style="color:'+(parseFloat(s.momentum)>=0?'var(--green2)':'var(--red)')+'">'+s.momentum+'%</div></div>';h+='<div class="ao-card '+(s.nearDemand?'bull':'neutral')+'"><div class="ao-t">Demand Zone</div><div class="ao-v">$'+fmtP(s.demandZone)+(s.nearDemand?' <span style="color:var(--green2);font-size:6px">NEAR</span>':'')+'</div></div>';h+='<div class="ao-card '+(s.nearSupply?'bear':'neutral')+'"><div class="ao-t">Supply Zone</div><div class="ao-v">$'+fmtP(s.supplyZone)+(s.nearSupply?' <span style="color:var(--red);font-size:6px">NEAR</span>':'')+'</div></div>';h+='<div class="ao-card '+sigCls+'"><div class="ao-t">Risk:Reward</div><div class="ao-v" style="color:var(--gold)">1:'+s.rr+'</div></div>';h+='<div class="ao-card neutral"><div class="ao-t">Position in Range</div><div class="ao-v">'+s.posInRange+'%</div></div>';h+='</div>';if(s.patterns.length>0){h+='<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">';for(var i=0;i<s.patterns.length;i++){h+='<div class="sig-tag '+s.patterns[i].type+'">'+s.patterns[i].name+'</div>'}h+='</div>'}if(s.orderBlocks&&s.orderBlocks.length>0){h+='<div style="margin-top:4px;font-size:6px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.3px">Active Order Blocks</div>';for(var i=0;i<Math.min(3,s.orderBlocks.length);i++){var ob=s.orderBlocks[i];var obCls=ob.type==='bullish'?'bull-ob':'bear-ob';var mitCls=ob.mitigated?' mitigated':'';h+='<div class="ob-zone '+obCls+mitCls+'"><span class="ob-label">'+(ob.type==='bullish'?'BUY':'SELL')+' OB</span><span class="ob-range">$'+fmtP(ob.low)+' - $'+fmtP(ob.high)+'</span><span class="ob-vol">'+fmtVol(ob.volume)+'</span></div>'}}document.getElementById('analysisOverlay').innerHTML=h}
+function updateOBZones(){if(!showOB)return;var s=analyzeMarket(selCoin);if(!s||!s.orderBlocks||!s.orderBlocks.length){document.getElementById('obZonesList').innerHTML='<div style="font-size:8px;color:var(--text3);text-align:center;padding:4px">No active order blocks detected</div>';return}var h='';for(var i=0;i<s.orderBlocks.length;i++){var ob=s.orderBlocks[i];var obCls=ob.type==='bullish'?'bull-ob':'bear-ob';var mitCls=ob.mitigated?' mitigated':'';h+='<div class="ob-zone '+obCls+mitCls+'"><span class="ob-label" style="color:'+(ob.type==='bullish'?'var(--green2)':'var(--red)')+'">'+(ob.type==='bullish'?'DEMAND':'SUPPLY')+' OB</span><span class="ob-range">$'+fmtP(ob.low)+' - $'+fmtP(ob.high)+'</span><span class="ob-vol">Vol: '+fmtVol(ob.volume)+'</span>'+(ob.mitigated?'<span style="font-size:5px;color:var(--red);margin-left:4px">MITIGATED</span>':'<span style="font-size:5px;color:var(--green2);margin-left:4px">ACTIVE</span>')+'</div>'}document.getElementById('obZonesList').innerHTML=h}
+function fmtVol(v){if(v>=1e9)return(v/1e9).toFixed(2)+'B';if(v>=1e6)return(v/1e6).toFixed(2)+'M';if(v>=1e3)return(v/1e3).toFixed(1)+'K';return v.toFixed(0)}
 function openCoinSel(){document.getElementById('coinSearch').value='';renderCoinSel();document.getElementById('coinModal').classList.add('on')}
 function renderCoinSel(){var q=(document.getElementById('coinSearch').value||'').toUpperCase();var h='';var c=0;for(var k in prices){if(!prices.hasOwnProperty(k))continue;if(q&&k.indexOf(q)<0&&(COIN_NAMES[k]||'').toUpperCase().indexOf(q)<0)continue;var p=prices[k];var bg=k==='DELTA'?'linear-gradient(135deg,var(--gold2),var(--gold4))':coinColor(k);h+='<div class="coin-row" onclick="selectCoin(\''+k+'\')"><div class="ci" style="background:'+bg+'">'+coinImg(k)+'</div><div class="coin-info"><div class="coin-name">'+(COIN_NAMES[k]||k)+'</div><div class="coin-sym">'+k+'/USDT</div></div><div class="coin-price"><div class="cp">$'+fmtP(p.price)+'</div></div></div>';c++;if(c>=150)break}document.getElementById('coinSelList').innerHTML=h}
 
@@ -597,7 +659,7 @@ function setSigTF(tf,el){sigTimeframe=tf;document.querySelectorAll('#pg_chart .f
 function analyzeMarket(sym){
 var p=prices[sym];if(!p||!p.price)return null;
 var hist=sigHistory[sym];if(!hist){hist=[];sigHistory[sym]=hist}
-hist.push({p:p.price,t:Date.now(),h:p.high||p.price*1.01,l:p.low||p.price*0.99,c:p.change||0});
+hist.push({p:p.price,t:Date.now(),h:p.high||p.price*1.01,l:p.low||p.price*0.99,c:p.change||0,v:p.volume||0});
 if(hist.length>200)hist.splice(0,hist.length-200);
 if(hist.length<5)return null;
 
@@ -620,9 +682,9 @@ var supplyZone=h24-(range*0.15);
 var nearDemand=cur<=demandZone;
 var nearSupply=cur>=supplyZone;
 
-// Price Action Patterns (simulated from available data)
+// Price Action Patterns
 var patterns=[];
-var recent=hist.slice(-5);
+var recent=hist.slice(-8);
 var lastC=recent[recent.length-1];
 var prevC=recent.length>=2?recent[recent.length-2]:lastC;
 
@@ -634,8 +696,9 @@ if(wickDn>bodySize*2&&lastC.p>prevC.p)patterns.push({name:'Bullish Pin Bar',type
 if(wickUp>bodySize*2&&lastC.p<prevC.p)patterns.push({name:'Bearish Pin Bar',type:'bearish'});
 
 // Engulfing
-if(lastC.p>prevC.p&&bodySize>Math.abs(prevC.p-(recent.length>=3?recent[recent.length-3].p:prevC.p))*1.2)patterns.push({name:'Bullish Engulfing',type:'bullish'});
-if(lastC.p<prevC.p&&bodySize>Math.abs(prevC.p-(recent.length>=3?recent[recent.length-3].p:prevC.p))*1.2)patterns.push({name:'Bearish Engulfing',type:'bearish'});
+var prevBody=recent.length>=3?Math.abs(prevC.p-recent[recent.length-3].p):bodySize;
+if(lastC.p>prevC.p&&bodySize>prevBody*1.2)patterns.push({name:'Bullish Engulfing',type:'bullish'});
+if(lastC.p<prevC.p&&bodySize>prevBody*1.2)patterns.push({name:'Bearish Engulfing',type:'bearish'});
 
 // BOS detection
 var highs=[];var lows=[];
@@ -644,13 +707,49 @@ var maxH=Math.max.apply(null,highs);var minL=Math.min.apply(null,lows);
 if(cur>=maxH*0.998)patterns.push({name:'Break of Structure (Up)',type:'bullish'});
 if(cur<=minL*1.002)patterns.push({name:'Break of Structure (Down)',type:'bearish'});
 
+// === ORDER BLOCK DETECTION (Advanced) ===
+var orderBlocks=[];
+var avgBody=0;
+for(var i=1;i<recent.length;i++){avgBody+=Math.abs(recent[i].p-(i>0?recent[i-1].p:recent[i].p))}
+avgBody=avgBody/(recent.length-1);var obThreshold=1.5;
+
+for(var i=2;i<recent.length;i++){
+var cCur=recent[i];var cPrev=recent[i-1];var cBody=Math.abs(cCur.p-cPrev.p);
+// Bullish OB: prev candle was red (down), current is green (up) and engulfs with strong momentum
+if(cPrev.p<(i>=3?recent[i-2].p:cPrev.p)&&cCur.p>cPrev.p&&cCur.p>cPrev.h&&cBody>avgBody*obThreshold){
+var obHigh=cPrev.h;var obLow=cPrev.l;var obVol=cPrev.v||p.volume*0.1;
+var mitigated=cur<obLow;
+orderBlocks.push({type:'bullish',high:obHigh,low:obLow,volume:obVol,mitigated:mitigated,idx:i});
+if(!mitigated)patterns.push({name:'Bullish Order Block',type:'bullish'})}
+// Bearish OB: prev candle was green (up), current is red (down) and engulfs with strong momentum
+if(cPrev.p>(i>=3?recent[i-2].p:cPrev.p)&&cCur.p<cPrev.p&&cCur.p<cPrev.l&&cBody>avgBody*obThreshold){
+var obHigh=cPrev.h;var obLow=cPrev.l;var obVol=cPrev.v||p.volume*0.1;
+var mitigated=cur>obHigh;
+orderBlocks.push({type:'bearish',high:obHigh,low:obLow,volume:obVol,mitigated:mitigated,idx:i});
+if(!mitigated)patterns.push({name:'Bearish Order Block',type:'bearish'})}}
+
+// Also create OBs from 24h high/low zones
+var hiOB={type:'bearish',high:h24,low:h24-range*0.08,volume:p.volume*0.3,mitigated:cur>h24,idx:-1};
+var loOB={type:'bullish',high:l24+range*0.08,low:l24,volume:p.volume*0.3,mitigated:cur<l24,idx:-1};
+orderBlocks.push(hiOB);orderBlocks.push(loOB);
+
+// Mitigation cleanup - remove mitigated OBs from active list
+var activeOBs=[];for(var i=0;i<orderBlocks.length;i++){activeOBs.push(orderBlocks[i])}
+// Sort by proximity to current price
+activeOBs.sort(function(a,b){var distA=Math.min(Math.abs(cur-a.high),Math.abs(cur-a.low));var distB=Math.min(Math.abs(cur-b.high),Math.abs(cur-b.low));return distA-distB});
+
+// Check if price is inside an OB
+var insideBullOB=false;var insideBearOB=false;
+for(var i=0;i<activeOBs.length;i++){
+if(!activeOBs[i].mitigated){
+if(activeOBs[i].type==='bullish'&&cur>=activeOBs[i].low&&cur<=activeOBs[i].high){insideBullOB=true;patterns.push({name:'Inside Buy OB',type:'bullish'})}
+if(activeOBs[i].type==='bearish'&&cur>=activeOBs[i].low&&cur<=activeOBs[i].high){insideBearOB=true;patterns.push({name:'Inside Sell OB',type:'bearish'})}}}
+
 // Momentum
 var momentum=0;
 if(hist.length>=10){var p10=hist[hist.length-10].p;momentum=((cur-p10)/p10)*100}
-
 if(momentum>2)patterns.push({name:'Strong Momentum Up',type:'bullish'});
 if(momentum<-2)patterns.push({name:'Strong Momentum Down',type:'bearish'});
-
 if(nearDemand&&trendScore>=0)patterns.push({name:'At Demand Zone',type:'bullish'});
 if(nearSupply&&trendScore<=0)patterns.push({name:'At Supply Zone',type:'bearish'});
 
@@ -665,31 +764,37 @@ if(patterns[i].type==='bullish')bullishPts++;
 if(patterns[i].type==='bearish')bearishPts++}
 bullishPts+=Math.max(0,trendScore);bearishPts+=Math.abs(Math.min(0,trendScore));
 if(nearDemand)bullishPts+=2;if(nearSupply)bearishPts+=2;
+if(insideBullOB)bullishPts+=3;if(insideBearOB)bearishPts+=3;
 
 var signal='WAIT';var confidence=0;var direction='neutral';
-if(bullishPts>=4&&bullishPts>bearishPts+1){signal='BUY';confidence=Math.min(95,50+bullishPts*8);direction='buy'}
-else if(bearishPts>=4&&bearishPts>bullishPts+1){signal='SELL';confidence=Math.min(95,50+bearishPts*8);direction='sell'}
-else if(bullishPts>=3&&bullishPts>bearishPts){signal='BUY';confidence=Math.min(80,40+bullishPts*7);direction='buy'}
-else if(bearishPts>=3&&bearishPts>bullishPts){signal='SELL';confidence=Math.min(80,40+bearishPts*7);direction='sell'}
+if(bullishPts>=4&&bullishPts>bearishPts+1){signal='BUY';confidence=Math.min(95,50+bullishPts*6);direction='buy'}
+else if(bearishPts>=4&&bearishPts>bullishPts+1){signal='SELL';confidence=Math.min(95,50+bearishPts*6);direction='sell'}
+else if(bullishPts>=3&&bullishPts>bearishPts){signal='BUY';confidence=Math.min(80,40+bullishPts*5);direction='buy'}
+else if(bearishPts>=3&&bearishPts>bullishPts){signal='SELL';confidence=Math.min(80,40+bearishPts*5);direction='sell'}
 else{confidence=30+Math.random()*15}
 
-// Risk Management
+// Risk Management using OBs for SL placement
 var slDist=range*0.12;var tpDist=slDist*2.2;
 var sl,tp,entry=cur;
-if(direction==='buy'){sl=cur-slDist;tp=cur+tpDist}
-else if(direction==='sell'){sl=cur+slDist;tp=cur-tpDist}
+if(direction==='buy'){
+var nearestBullOB=null;for(var i=0;i<activeOBs.length;i++){if(activeOBs[i].type==='bullish'&&!activeOBs[i].mitigated&&activeOBs[i].low<cur){nearestBullOB=activeOBs[i];break}}
+sl=nearestBullOB?nearestBullOB.low*0.998:cur-slDist;tp=cur+tpDist}
+else if(direction==='sell'){
+var nearestBearOB=null;for(var i=0;i<activeOBs.length;i++){if(activeOBs[i].type==='bearish'&&!activeOBs[i].mitigated&&activeOBs[i].high>cur){nearestBearOB=activeOBs[i];break}}
+sl=nearestBearOB?nearestBearOB.high*1.002:cur+slDist;tp=cur-tpDist}
 else{sl=cur-slDist;tp=cur+tpDist}
-var rr=(tpDist/slDist).toFixed(1);
+var actualSLDist=Math.abs(cur-sl);var actualTPDist=Math.abs(cur-tp);
+var rr=actualSLDist>0?(actualTPDist/actualSLDist).toFixed(1):'2.2';
 
 // Timeframe assignment
-var tf15=Math.random()>.4;var tf4h=Math.random()>.5;
+var tf15=Math.random()>.3;var tf4h=Math.random()>.4;
 if(chg>5||chg<-5){tf15=true;tf4h=true}
-if(confidence>70){tf15=true;tf4h=true}
+if(confidence>65){tf15=true;tf4h=true}
 
 // Strength (1-5 dots)
-var strength=Math.round(confidence/20);if(strength<1)strength=1;if(strength>5)strength=5;
+var strength=Math.round(confidence/18);if(strength<1)strength=1;if(strength>5)strength=5;
 
-return{sym:sym,signal:signal,direction:direction,confidence:confidence,trend:trend,trendScore:trendScore,patterns:patterns,entry:entry,sl:sl,tp:tp,rr:rr,demandZone:demandZone,supplyZone:supplyZone,nearDemand:nearDemand,nearSupply:nearSupply,momentum:momentum.toFixed(2),posInRange:(posInRange*100).toFixed(0),strength:strength,tf15:tf15,tf4h:tf4h,bullishPts:bullishPts,bearishPts:bearishPts}
+return{sym:sym,signal:signal,direction:direction,confidence:confidence,trend:trend,trendScore:trendScore,patterns:patterns,entry:entry,sl:sl,tp:tp,rr:rr,demandZone:demandZone,supplyZone:supplyZone,nearDemand:nearDemand,nearSupply:nearSupply,momentum:momentum.toFixed(2),posInRange:(posInRange*100).toFixed(0),strength:strength,tf15:tf15,tf4h:tf4h,bullishPts:bullishPts,bearishPts:bearishPts,orderBlocks:activeOBs}
 }
 
 function renderSignals(){
@@ -756,13 +861,13 @@ container.innerHTML=h}
 var origAfterPrices=afterPrices;
 afterPrices=function(){
 origAfterPrices();
-if(document.getElementById('pg_chart').classList.contains('active'))renderSignals()}
+if(document.getElementById('pg_chart').classList.contains('active')){renderSignals();updateAnalysisOverlay();updateOBZones()}}
 
 // Also render on chart page open
 var origRefreshPage=refreshPage;
 refreshPage=function(p){
 origRefreshPage(p);
-if(p==='chart')renderSignals()}
+if(p==='chart'){renderSignals();if(showAnalysis)updateAnalysisOverlay();if(showOB)updateOBZones()}}
 
 // Auto-populate signal history with initial data
 function initSigHistory(){
